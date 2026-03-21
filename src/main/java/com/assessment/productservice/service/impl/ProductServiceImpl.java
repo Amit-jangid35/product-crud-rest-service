@@ -1,7 +1,6 @@
 package com.assessment.productservice.service.impl;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -21,21 +20,21 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ProductServiceImpl implements ProductService {
 
-    private final ProductRepository repository;
+    private final ProductRepository productRepository;
 
     @Override
     public List<ProductResponse> getAllProducts() {
-        return repository.findAll()
+        return productRepository.findAll()
                 .stream()
                 .map(ProductMapper::toResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
     public ProductResponse getProductById(Long id) {
         log.debug("Fetching product from DB with id: {}", id);
 
-        Product product = repository.findById(id)
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
         return ProductMapper.toResponse(product);
@@ -43,36 +42,36 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse createProduct(ProductRequest request) {
+        log.info("Creating new product: {}", request.getName());
+
         Product product = new Product();
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
 
-        log.info("Creating new product: {}", request.getName());
-
-        Product saved = repository.save(product);
-        return ProductMapper.toResponse(saved);
+        return ProductMapper.toResponse(productRepository.save(product));
     }
 
     @Override
     public ProductResponse updateProduct(Long id, ProductRequest request) {
-        Product product = repository.findById(id)
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
         product.setName(request.getName());
-        product.setDescription(request.getDescription());
+        if (request.getDescription() != null) {
+            product.setDescription(request.getDescription());
+        }
         product.setPrice(request.getPrice());
 
-        Product updated = repository.save(product);
-        return ProductMapper.toResponse(updated);
+        return ProductMapper.toResponse(productRepository.save(product));
     }
 
     @Override
     public void deleteProduct(Long id) {
-        Product product = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
-
-        repository.delete(product);
+        if (!productRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Product not found with id: " + id);
+        }
+        productRepository.deleteById(id);
         log.info("Deleted product with id: {}", id);
     }
 }
