@@ -10,7 +10,7 @@
 		<relativePath />
 	</parent>
 	<groupId>com.assessment.productservice</groupId>
-	<artifactId>com.assessment.productservice</artifactId>
+	<artifactId>product-crud-rest-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>productservice</name>
 	<description>RESTful CRUD API built with Spring Boot</description>
